@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#151719</color>
+    <color name="card">#202326</color>
+    <color name="field">#2A2E32</color>
+    <color name="text">#F1F2EE</color>
+    <color name="muted">#9A9E9C</color>
+    <color name="accent">#5BD6A0</color>
+    <color name="auction">#7FB8FF</color>
+    <color name="easy">#5BD6A0</color>
+    <color name="maybe">#F2B95C</color>
+    <color name="risky">#F2706A</color>
+    <color name="icon_bg">#1B2420</color>
+</resources>
