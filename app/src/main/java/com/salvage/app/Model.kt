@@ -56,7 +56,7 @@ data class Deal(
             Deal(
                 id = o.getString("id"),
                 title = o.getString("title"),
-                console = Console.byKey(o.getString("console")) ?: return null,
+                console = Console.byKey(o.getString("console")) ?: throw IllegalStateException(),
                 price = o.getDouble("price"),
                 postage = if (o.has("postage")) o.getDouble("postage") else null,
                 auction = o.optBoolean("auction"),
