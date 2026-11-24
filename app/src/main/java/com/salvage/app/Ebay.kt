@@ -105,15 +105,25 @@ class Ebay(private val store: Store) {
         for (i in 0 until items.length()) {
             var deal = Deal.fromEbay(items.getJSONObject(i), console) ?: continue
             if (!console.matches(deal.title)) continue
-            if (!console.isController && Faults.isControllerListing(deal.title)) {
-                // A controller listed in the console category – show it on the Controllers tab instead.
-                val pad = if (Console.XBOX_PAD.matches(deal.title)) Console.XBOX_PAD else Console.DUALSENSE
-                if (!store.enabled(pad) || deal.total > store.maxPrice(pad)) continue
-                deal = deal.copy(console = pad)
-            } else {
-                if (console.isController && Faults.isConsoleListing(deal.title)) continue
-                if (Faults.isAccessory(deal.title)) continue
-                if (deal.total > maxPrice) continue
+            when (console.kind) {
+                Kind.CONSOLE -> if (Faults.isControllerListing(deal.title)) {
+                    // A controller listed in the console category – show it with the controllers instead.
+                    val pad = if (Console.XBOX_PAD.matches(deal.title)) Console.XBOX_PAD else Console.DUALSENSE
+                    if (!store.enabled(pad) || deal.total > store.maxPrice(pad)) continue
+                    deal = deal.copy(console = pad)
+                } else {
+                    if (Faults.isAccessory(deal.title)) continue
+                    if (deal.total > maxPrice) continue
+                }
+                Kind.CONTROLLER -> {
+                    if (Faults.isConsoleListing(deal.title)) continue
+                    if (Faults.isAccessory(deal.title)) continue
+                    if (deal.total > maxPrice) continue
+                }
+                Kind.GPU, Kind.LAPTOP -> {
+                    if (Faults.isPcJunk(deal.title)) continue
+                    if (deal.total > maxPrice) continue
+                }
             }
             out.add(deal)
         }
@@ -121,13 +131,14 @@ class Ebay(private val store: Store) {
     }
 
     /** Reads one listing's condition notes and description and works out what the seller says is wrong. */
-    fun readNotes(itemId: String): Notes {
+    fun readNotes(itemId: String, kind: Kind): Notes {
         val url = ITEM_URL + enc(itemId)
         val json = get(url) ?: run { store.clearToken(); get(url) }
             ?: throw EbayException("eBay refused the request")
         return Faults.readDescription(
             json.optString("conditionDescription").ifEmpty { null },
             json.optString("description").ifEmpty { json.optString("shortDescription").ifEmpty { null } },
+            kind,
         )
     }
 

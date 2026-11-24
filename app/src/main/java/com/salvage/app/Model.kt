@@ -4,6 +4,13 @@ import org.json.JSONObject
 import java.time.Instant
 import java.util.Locale
 
+enum class Kind(val label: String) {
+    CONSOLE("Consoles"), CONTROLLER("Controllers"), GPU("GPUs"), LAPTOP("Laptops")
+}
+
+private fun rx(p: String) = Regex(p, RegexOption.IGNORE_CASE)
+
+/** Something Salvage searches for. Each has its own eBay search and price limits. */
 enum class Console(
     val key: String,
     val label: String,
@@ -11,26 +18,49 @@ enum class Console(
     val defaultMax: Int,
     /** Buy it now listings at or under this send a notification. */
     val defaultAlert: Int,
-    val isController: Boolean,
-    /** eBay category: Video Game Consoles, or Controllers & Attachments. */
+    val kind: Kind,
+    /** eBay category to search in. */
     val category: String,
     private val pattern: Regex,
 ) {
-    PS5("ps5", "PS5", "(ps5, playstation 5)", 150, 100, false, "139971",
-        Regex("""\b(ps\s?5|play\s?station\s?5)\b""", RegexOption.IGNORE_CASE)),
-    SERIES_X("xsx", "Series X", "xbox series x", 130, 90, false, "139971",
-        Regex("""series\s?x\b""", RegexOption.IGNORE_CASE)),
-    SERIES_S("xss", "Series S", "xbox series s", 70, 45, false, "139971",
-        Regex("""series\s?s\b""", RegexOption.IGNORE_CASE)),
-    DUALSENSE("ds", "DualSense", "(dualsense, ps5 controller)", 20, 12, true, "117042",
-        Regex("""dual\s?sense|\b(ps\s?5|play\s?station\s?5)\b""", RegexOption.IGNORE_CASE)),
-    XBOX_PAD("xpad", "Xbox pad", "(xbox series controller, xbox wireless controller)", 15, 10, true, "117042",
-        Regex("""\bxbox\b""", RegexOption.IGNORE_CASE));
+    PS5("ps5", "PS5", "(ps5, playstation 5)", 150, 100, Kind.CONSOLE, "139971",
+        rx("""\b(ps\s?5|play\s?station\s?5)\b""")),
+    SERIES_X("xsx", "Series X", "xbox series x", 130, 90, Kind.CONSOLE, "139971",
+        rx("""series\s?x\b""")),
+    SERIES_S("xss", "Series S", "xbox series s", 70, 45, Kind.CONSOLE, "139971",
+        rx("""series\s?s\b""")),
+    DUALSENSE("ds", "DualSense", "(dualsense, ps5 controller)", 20, 12, Kind.CONTROLLER, "117042",
+        rx("""dual\s?sense|\b(ps\s?5|play\s?station\s?5)\b""")),
+    XBOX_PAD("xpad", "Xbox pad", "(xbox series controller, xbox wireless controller)", 15, 10, Kind.CONTROLLER, "117042",
+        rx("""\bxbox\b""")),
+    RTX20("rtx20", "RTX 20", "(2060, 2070, 2080)", 80, 45, Kind.GPU, "27386",
+        rx("""\b(rtx\s?)?20[678]0\b""")),
+    RTX30("rtx30", "RTX 30", "(3050, 3060, 3070, 3080, 3090)", 200, 110, Kind.GPU, "27386",
+        rx("""\b(rtx\s?)?30[5-9]0\b""")),
+    RTX40("rtx40", "RTX 40", "(4060, 4070, 4080, 4090)", 450, 250, Kind.GPU, "27386",
+        rx("""\b(rtx\s?)?40[6-9]0\b""")),
+    RTX50("rtx50", "RTX 50", "(5060, 5070, 5080, 5090)", 650, 380, Kind.GPU, "27386",
+        rx("""\b(rtx\s?)?50[6-9]0\b""")),
+    RTX_LAPTOP("laptop", "RTX laptop", "rtx", 350, 200, Kind.LAPTOP, "177",
+        rx("""\brtx|\b(20[678]0|30[5-8]0|40[5-9]0|50[5-9]0)\b"""));
+
+    val isController: Boolean get() = kind == Kind.CONTROLLER
 
     fun matches(title: String) = pattern.containsMatchIn(title)
 
     companion object {
         fun byKey(key: String) = entries.firstOrNull { it.key == key }
+
+        private val gpuRegex = rx("""\b(?:rtx\s?)?((?:20|30|40|50)[5-9]0)(\s?ti\b|\s?super\b)?""")
+
+        /** "RTX 3080 Ti" from a title, or null. */
+        fun gpuModel(title: String): String? {
+            val m = gpuRegex.find(title) ?: return null
+            val suffix = m.groupValues[2].trim().lowercase().let {
+                when (it) { "ti" -> " Ti"; "super" -> " Super"; else -> "" }
+            }
+            return "RTX " + m.groupValues[1] + suffix
+        }
     }
 }
 
@@ -52,7 +82,13 @@ data class Deal(
     val notes: Notes? = null,
 ) {
     val total: Double get() = price + (postage ?: 0.0)
-    val analysis: Analysis = Faults.analyse(title, notes?.tags)
+    val analysis: Analysis = Faults.analyse(title, notes?.tags, console.kind)
+
+    /** What to call it in the list: the GPU model where there is one, otherwise the type. */
+    val shortName: String
+        get() = if (console.kind == Kind.GPU || console.kind == Kind.LAPTOP)
+            Console.gpuModel(title)?.let { if (console.kind == Kind.LAPTOP) "$it laptop" else it } ?: console.label
+        else console.label
 
     fun toJson(): JSONObject = JSONObject().apply {
         put("id", id); put("title", title); put("console", console.key)

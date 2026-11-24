@@ -1,11 +1,12 @@
 # Salvage
 
-Android app that watches eBay UK for faulty PS5, Xbox Series X and Xbox Series S consoles under your own price limits, so you can buy, repair and flip them.
+Android app that watches eBay UK for faulty PS5 and Xbox Series X/S consoles, controllers, Nvidia RTX graphics cards (20, 30, 40 and 50 series) and RTX gaming laptops under your own price limits, so you can buy, repair and flip them.
 
 - Uses eBay's official Browse API: "For parts or not working" listings in the Video Game Consoles category, located in the UK
 - Separate max price for each console (postage included)
 - Reads the title and tags the likely fault: easy bench fixes (HDMI, fan, software, disc drive), gambles (no power, light of death, overheating, liquid) and red flags (banned, parts missing)
-- Separate tabs for Buy it now, Auctions and Controllers (faulty DualSense and Xbox controllers – drift, buttons, charging)
+- Sections for Consoles, Controllers, GPUs and Laptops, each split into Buy it now and Auctions
+- GPU and laptop fault tags: no display, artifacts, burnt, ex-mining, port damage, screen, keyboard, charging, locked BIOS
 - Sort by newest, cheapest or auctions ending soon; tap a listing to open it in the eBay app
 - Reads each new listing's condition notes and description and shows what the seller says is wrong ("Seller says: …"), adding fault tags it finds there
 - Alert price per item: only Buy it now listings under it send a notification (plus easy-fix faults up to 20% over); prices that would alert show in green

@@ -55,7 +55,7 @@ class DealAdapter(
         h.kind.setTextColor(context.getColor(if (d.auction) R.color.auction else R.color.muted))
 
         val meta = ArrayList<String>()
-        meta.add(d.console.label)
+        meta.add(d.shortName)
         d.location?.let { meta.add(it) }
         d.created?.let { meta.add("listed ${duration(now - it)} ago") }
         h.meta.text = meta.joinToString(" · ")

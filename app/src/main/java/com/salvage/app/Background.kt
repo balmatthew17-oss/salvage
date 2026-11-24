@@ -78,7 +78,7 @@ class Scanner(context: Context) {
         toRead.map { d ->
             async {
                 gate.withPermit {
-                    try { d.id to ebay.readNotes(d.id) } catch (e: Exception) { null }
+                    try { d.id to ebay.readNotes(d.id, d.console.kind) } catch (e: Exception) { null }
                 }
             }
         }.awaitAll().filterNotNull().forEach { (id, notes) -> cache[id] = notes }
@@ -186,7 +186,7 @@ object Notifier {
 
     fun createChannel(context: Context) {
         val ch = NotificationChannel(CHANNEL, "New listings", NotificationManager.IMPORTANCE_DEFAULT).apply {
-            description = "New faulty consoles under your max price"
+            description = "New faulty listings under your alert price"
         }
         context.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
     }
@@ -211,7 +211,7 @@ object Notifier {
                     val kind = if (d.auction) "Auction" else "Buy it now"
                     val n = NotificationCompat.Builder(context, CHANNEL)
                         .setSmallIcon(R.drawable.ic_notify)
-                        .setContentTitle("${d.console.label} · ${money(d.total)} · $kind")
+                        .setContentTitle("${d.shortName} · ${money(d.total)} · $kind")
                         .setContentText(d.title)
                         .setStyle(NotificationCompat.BigTextStyle().bigText(
                             d.title + (if (tags.isNotEmpty()) "\n$tags" else "") +
@@ -226,12 +226,12 @@ object Notifier {
                     context, 0, Intent(context, MainActivity::class.java), flags
                 )
                 val style = NotificationCompat.InboxStyle()
-                deals.take(6).forEach { style.addLine("${money(it.total)}  ${it.console.label} – ${it.title}") }
+                deals.take(6).forEach { style.addLine("${money(it.total)}  ${it.shortName} – ${it.title}") }
                 if (deals.size > 6) style.setSummaryText("+${deals.size - 6} more")
                 val n = NotificationCompat.Builder(context, CHANNEL)
                     .setSmallIcon(R.drawable.ic_notify)
-                    .setContentTitle("${deals.size} new faulty consoles")
-                    .setContentText(deals.joinToString(", ") { "${it.console.label} ${money(it.total)}" })
+                    .setContentTitle("${deals.size} new faulty listings")
+                    .setContentText(deals.joinToString(", ") { "${it.shortName} ${money(it.total)}" })
                     .setStyle(style)
                     .setContentIntent(open)
                     .setAutoCancel(true)

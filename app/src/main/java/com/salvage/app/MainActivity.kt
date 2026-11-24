@@ -24,23 +24,18 @@ class MainActivity : ComponentActivity() {
 
     private enum class Sort(val label: String) { NEWEST("Newest"), CHEAPEST("Cheapest"), ENDING("Ending soon") }
 
-    private enum class Tab(val label: String, val sorts: List<Sort>) {
+    private enum class Mode(val label: String, val sorts: List<Sort>) {
         BUY_NOW("Buy it now", listOf(Sort.NEWEST, Sort.CHEAPEST)),
-        AUCTIONS("Auctions", listOf(Sort.ENDING, Sort.NEWEST, Sort.CHEAPEST)),
-        CONTROLLERS("Controllers", listOf(Sort.NEWEST, Sort.CHEAPEST, Sort.ENDING));
+        AUCTIONS("Auctions", listOf(Sort.ENDING, Sort.NEWEST, Sort.CHEAPEST));
 
-        fun includes(d: Deal) = when (this) {
-            BUY_NOW -> !d.console.isController && !d.auction
-            AUCTIONS -> !d.console.isController && d.auction
-            CONTROLLERS -> d.console.isController
-        }
-        fun shows(c: Console) = c.isController == (this == CONTROLLERS)
+        fun includes(d: Deal) = d.auction == (this == AUCTIONS)
     }
 
     private lateinit var store: Store
     private lateinit var adapter: DealAdapter
     private lateinit var refresh: SwipeRefreshLayout
     private lateinit var subtitle: TextView
+    private lateinit var sectionRow: LinearLayout
     private lateinit var tabRow: LinearLayout
     private lateinit var filterRow: LinearLayout
     private lateinit var sortRow: LinearLayout
@@ -48,7 +43,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var emptyText: TextView
     private lateinit var emptyAction: TextView
 
-    private var tab = Tab.BUY_NOW
+    private var section = Kind.CONSOLE
+    private var mode = Mode.BUY_NOW
     private var filter: Console? = null
     private var sort = Sort.NEWEST
     private var all: List<Deal> = emptyList()
@@ -65,6 +61,7 @@ class MainActivity : ComponentActivity() {
         Notifier.createChannel(this)
 
         subtitle = findViewById(R.id.subtitle)
+        sectionRow = findViewById(R.id.sections)
         tabRow = findViewById(R.id.tabs)
         filterRow = findViewById(R.id.filters)
         sortRow = findViewById(R.id.sorts)
@@ -143,7 +140,9 @@ class MainActivity : ComponentActivity() {
     private fun visibleDeals(): List<Deal> {
         val hidden = store.hidden
         val now = System.currentTimeMillis()
-        val list = all.filter { it.id !in hidden && tab.includes(it) && (filter == null || it.console == filter) }
+        val list = all.filter {
+            it.id !in hidden && it.console.kind == section && mode.includes(it) && (filter == null || it.console == filter)
+        }
             // Drop auctions that have already finished.
             .filter { !(it.auction && (it.endTime ?: Long.MAX_VALUE) < now) }
         return when (sort) {
@@ -164,7 +163,7 @@ class MainActivity : ComponentActivity() {
 
         val last = store.lastScan
         subtitle.text = when {
-            !store.hasKeys -> "Faulty consoles on eBay UK"
+            !store.hasKeys -> "Faulty consoles, GPUs and laptops on eBay UK"
             error != null -> error
             last == 0L -> "Checking eBay…"
             else -> {
@@ -190,8 +189,8 @@ class MainActivity : ComponentActivity() {
                 emptyAction.text = "Try again"
                 emptyAction.visibility = View.VISIBLE
             }
-            tab == Tab.CONTROLLERS && Console.entries.none { it.isController && store.enabled(it) } -> {
-                emptyText.text = "Controller searches are turned off.\nSwitch them on in Settings."
+            Console.entries.none { it.kind == section && store.enabled(it) } -> {
+                emptyText.text = "${section.label} searches are turned off.\nSwitch them on in Settings."
                 emptyAction.visibility = View.GONE
             }
             else -> {
@@ -218,14 +217,19 @@ class MainActivity : ComponentActivity() {
         setOnClickListener { click() }
     }
 
-    private fun tabButton(text: String, on: Boolean, click: () -> Unit) = TextView(this).apply {
+    /** [primary] = the section row (green); otherwise the Buy it now / Auctions row (grey). */
+    private fun tabButton(text: String, on: Boolean, primary: Boolean = false, click: () -> Unit) = TextView(this).apply {
         this.text = text
-        textSize = 13f
+        textSize = if (primary) 12.5f else 13f
         setTypeface(typeface, android.graphics.Typeface.BOLD)
         gravity = android.view.Gravity.CENTER
         maxLines = 1
-        setTextColor(getColor(if (on) R.color.bg else R.color.muted))
-        if (on) setBackgroundResource(R.drawable.chip_on) else background = null
+        setTextColor(getColor(when {
+            on && primary -> R.color.bg
+            on -> R.color.text
+            else -> R.color.muted
+        }))
+        if (on) setBackgroundResource(if (primary) R.drawable.chip_on else R.drawable.chip_sel) else background = null
         setPadding(dp(4), dp(9), dp(4), dp(9))
         layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         setOnClickListener { click() }
@@ -236,31 +240,46 @@ class MainActivity : ComponentActivity() {
         val now = System.currentTimeMillis()
         val live = all.filter { it.id !in hidden && !(it.auction && (it.endTime ?: Long.MAX_VALUE) < now) }
 
-        tabRow.removeAllViews()
-        for (t in Tab.entries) {
-            val n = live.count { t.includes(it) }
-            tabRow.addView(tabButton("${t.label}  $n", tab == t) {
-                if (tab != t) {
-                    tab = t
+        sectionRow.removeAllViews()
+        for (k in Kind.entries) {
+            sectionRow.addView(tabButton(k.label, section == k, primary = true) {
+                if (section != k) {
+                    section = k
                     filter = null
-                    sort = t.sorts.first()
                     render()
                     findViewById<RecyclerView>(R.id.list).scrollToPosition(0)
                 }
             })
         }
 
-        val inTab = live.filter { tab.includes(it) }
-        filterRow.removeAllViews()
-        filterRow.addView(chip("All ${inTab.size}", filter == null) { filter = null; render() })
-        for (c in Console.entries) {
-            if (!tab.shows(c) || !store.enabled(c)) continue
-            val n = inTab.count { it.console == c }
-            filterRow.addView(chip("${c.label} $n", filter == c) { filter = c; render() })
+        val inSection = live.filter { it.console.kind == section }
+        tabRow.removeAllViews()
+        for (m in Mode.entries) {
+            val n = inSection.count { m.includes(it) }
+            tabRow.addView(tabButton("${m.label}  $n", mode == m) {
+                if (mode != m) {
+                    mode = m
+                    sort = m.sorts.first()
+                    render()
+                    findViewById<RecyclerView>(R.id.list).scrollToPosition(0)
+                }
+            })
         }
 
+        val inTab = inSection.filter { mode.includes(it) }
+        val types = Console.entries.filter { it.kind == section && store.enabled(it) }
+        filterRow.removeAllViews()
+        if (types.size > 1) {
+            filterRow.addView(chip("All ${inTab.size}", filter == null) { filter = null; render() })
+            for (c in types) {
+                val n = inTab.count { it.console == c }
+                filterRow.addView(chip("${c.label} $n", filter == c) { filter = c; render() })
+            }
+        }
+        (filterRow.parent as View).visibility = if (types.size > 1) View.VISIBLE else View.GONE
+
         sortRow.removeAllViews()
-        for (s in tab.sorts) {
+        for (s in mode.sorts) {
             sortRow.addView(chip(s.label, sort == s) {
                 sort = s
                 render()

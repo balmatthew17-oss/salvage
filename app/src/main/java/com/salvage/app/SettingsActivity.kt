@@ -3,7 +3,13 @@ package com.salvage.app
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.graphics.Typeface
+import android.text.InputFilter
+import android.text.InputType
+import android.util.TypedValue
+import android.view.Gravity
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.RadioGroup
 import android.widget.Switch
 import android.widget.TextView
@@ -42,13 +48,7 @@ class SettingsActivity : ComponentActivity() {
         auctionAlerts = findViewById(R.id.auction_alerts)
         unhide = findViewById(R.id.unhide)
 
-        rows = listOf(
-            ConsoleRow(Console.PS5, findViewById(R.id.on_ps5), findViewById(R.id.max_ps5), findViewById(R.id.alert_ps5)),
-            ConsoleRow(Console.SERIES_X, findViewById(R.id.on_xsx), findViewById(R.id.max_xsx), findViewById(R.id.alert_xsx)),
-            ConsoleRow(Console.SERIES_S, findViewById(R.id.on_xss), findViewById(R.id.max_xss), findViewById(R.id.alert_xss)),
-            ConsoleRow(Console.DUALSENSE, findViewById(R.id.on_ds), findViewById(R.id.max_ds), findViewById(R.id.alert_ds)),
-            ConsoleRow(Console.XBOX_PAD, findViewById(R.id.on_xpad), findViewById(R.id.max_xpad), findViewById(R.id.alert_xpad)),
-        )
+        rows = buildTypeRows(findViewById(R.id.types))
 
         clientId.setText(store.clientId)
         clientSecret.setText(store.clientSecret)
@@ -83,6 +83,89 @@ class SettingsActivity : ComponentActivity() {
             store.unhideAll()
             updateUnhide()
         }
+    }
+
+    private fun dp(v: Int) = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics).toInt()
+
+    private fun text(s: String, sizeSp: Float, colorRes: Int, bold: Boolean = false) = TextView(this).apply {
+        text = s
+        textSize = sizeSp
+        setTextColor(getColor(colorRes))
+        if (bold) setTypeface(typeface, Typeface.BOLD)
+    }
+
+    private fun priceField(hint: Int) = EditText(this).apply {
+        this.hint = hint.toString()
+        inputType = InputType.TYPE_CLASS_NUMBER
+        filters = arrayOf(InputFilter.LengthFilter(4))
+        isSingleLine = true
+        textSize = 15f
+        setTextColor(getColor(R.color.text))
+        setHintTextColor(getColor(R.color.muted))
+        setBackgroundResource(R.drawable.field)
+        setPadding(dp(9), dp(9), dp(9), dp(9))
+        layoutParams = LinearLayout.LayoutParams(dp(64), LinearLayout.LayoutParams.WRAP_CONTENT)
+            .apply { marginStart = dp(4) }
+    }
+
+    /** One card per search (PS5, RTX 30...), grouped under a heading per section. */
+    private fun buildTypeRows(container: LinearLayout): List<ConsoleRow> {
+        val out = ArrayList<ConsoleRow>()
+        for (kind in Kind.entries) {
+            container.addView(text(kind.label.uppercase(), 13f, R.color.accent, bold = true).apply {
+                letterSpacing = 0.06f
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = dp(18); bottomMargin = dp(8) }
+            })
+            for (c in Console.entries.filter { it.kind == kind }) {
+                val card = LinearLayout(this).apply {
+                    orientation = LinearLayout.VERTICAL
+                    setBackgroundResource(R.drawable.card)
+                    setPadding(dp(12), dp(12), dp(12), dp(12))
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply { bottomMargin = dp(8) }
+                }
+                val toggle = Switch(this).apply {
+                    text = settingsName(c)
+                    textSize = 15f
+                    setTextColor(getColor(R.color.text))
+                    setTypeface(typeface, Typeface.BOLD)
+                }
+                card.addView(toggle, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT))
+                val line = LinearLayout(this).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    gravity = Gravity.CENTER_VERTICAL
+                    setPadding(0, dp(10), 0, 0)
+                }
+                val max = priceField(c.defaultMax)
+                val alert = priceField(c.defaultAlert)
+                line.addView(text("Show up to £", 13f, R.color.muted))
+                line.addView(max)
+                line.addView(text("Alert under £", 13f, R.color.accent).apply { setPadding(dp(14), 0, 0, 0) })
+                line.addView(alert)
+                card.addView(line)
+                container.addView(card)
+                out.add(ConsoleRow(c, toggle, max, alert))
+            }
+        }
+        return out
+    }
+
+    private fun settingsName(c: Console) = when (c) {
+        Console.PS5 -> "PS5"
+        Console.SERIES_X -> "Xbox Series X"
+        Console.SERIES_S -> "Xbox Series S"
+        Console.DUALSENSE -> "PS5 DualSense"
+        Console.XBOX_PAD -> "Xbox controller"
+        Console.RTX20 -> "RTX 2060 – 2080"
+        Console.RTX30 -> "RTX 3050 – 3090"
+        Console.RTX40 -> "RTX 4060 – 4090"
+        Console.RTX50 -> "RTX 5060 – 5090"
+        Console.RTX_LAPTOP -> "Laptops with an RTX GPU"
     }
 
     private fun updateUnhide() {
