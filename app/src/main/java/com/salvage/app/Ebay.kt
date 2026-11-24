@@ -56,9 +56,17 @@ class Ebay(private val store: Store) {
         val code = conn.responseCode
         val text = readBody(conn, code)
         if (code != 200) {
+            // Show eBay's own reason so problems are easy to diagnose.
+            val reason = try {
+                val e = JSONObject(text)
+                listOf(e.optString("error"), e.optString("error_description"))
+                    .filter { it.isNotBlank() }.joinToString(": ")
+            } catch (ex: Exception) { "" }.ifBlank { text.take(200) }
             val msg = when (code) {
-                400, 401 -> "eBay rejected your keys. Check you copied the Production App ID and Cert ID (not Sandbox)."
-                else -> "eBay sign-in failed (error $code)"
+                400, 401 -> "eBay rejected your keys (error $code" +
+                    (if (reason.isNotBlank()) " – $reason" else "") + ")"
+                else -> "eBay sign-in failed (error $code" +
+                    (if (reason.isNotBlank()) " – $reason" else "") + ")"
             }
             throw EbayException(msg, keyProblem = code == 400 || code == 401)
         }
