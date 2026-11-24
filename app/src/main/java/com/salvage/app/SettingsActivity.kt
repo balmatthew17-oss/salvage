@@ -42,6 +42,8 @@ class SettingsActivity : ComponentActivity() {
             ConsoleRow(Console.PS5, findViewById(R.id.on_ps5), findViewById(R.id.max_ps5)),
             ConsoleRow(Console.SERIES_X, findViewById(R.id.on_xsx), findViewById(R.id.max_xsx)),
             ConsoleRow(Console.SERIES_S, findViewById(R.id.on_xss), findViewById(R.id.max_xss)),
+            ConsoleRow(Console.DUALSENSE, findViewById(R.id.on_ds), findViewById(R.id.max_ds)),
+            ConsoleRow(Console.XBOX_PAD, findViewById(R.id.on_xpad), findViewById(R.id.max_xpad)),
         )
 
         clientId.setText(store.clientId)
@@ -115,7 +117,7 @@ class SettingsActivity : ComponentActivity() {
         saveKeys()
         var pricesChanged = false
         for (r in rows) {
-            val max = r.max.text.toString().trim().toIntOrNull()?.coerceIn(10, 2000) ?: r.console.defaultMax
+            val max = r.max.text.toString().trim().toIntOrNull()?.coerceIn(5, 2000) ?: r.console.defaultMax
             if (max != store.maxPrice(r.console) || r.toggle.isChecked != store.enabled(r.console)) pricesChanged = true
             store.setEnabled(r.console, r.toggle.isChecked)
             store.setMaxPrice(r.console, max)

@@ -47,9 +47,9 @@ class Store(context: Context) {
         set(v) = p.edit().putLong("last_scan", v).apply()
 
     /** False until the first scan, so you aren't flooded with notifications for everything already listed. */
-    var primed: Boolean
-        get() = p.getBoolean("primed", false)
-        set(v) = p.edit().putBoolean("primed", v).apply()
+    fun primed(c: Console): Boolean =
+        p.getBoolean("primed_${c.key}", !c.isController && p.getBoolean("primed", false))
+    fun setPrimed(c: Console) = p.edit().putBoolean("primed_${c.key}", true).apply()
 
     // --- id lists ---
 

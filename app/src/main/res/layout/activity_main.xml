@@ -48,6 +48,17 @@
             android:src="@drawable/ic_settings" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="12dp"
+        android:background="@drawable/chip_off"
+        android:orientation="horizontal"
+        android:padding="4dp" />
+
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

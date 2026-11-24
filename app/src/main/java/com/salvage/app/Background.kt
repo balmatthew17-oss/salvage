@@ -34,11 +34,13 @@ class Scanner(context: Context) {
         val errors = ArrayList<String>()
         var firstError: Exception? = null
         var anyOk = false
+        val searched = ArrayList<Console>()
 
         for (console in Console.entries) {
             if (!store.enabled(console)) continue
             try {
                 ebay.search(console, store.maxPrice(console)).forEach { found.putIfAbsent(it.id, it) }
+                searched.add(console)
                 anyOk = true
             } catch (e: Exception) {
                 if (firstError == null) firstError = e
@@ -51,9 +53,9 @@ class Scanner(context: Context) {
 
         val deals = found.values.toList()
         val seen = store.seen
-        val fresh = if (store.primed) deals.filter { it.id !in seen } else emptyList()
+        val fresh = deals.filter { it.id !in seen && store.primed(it.console) }
         store.addSeen(deals.map { it.id })
-        store.primed = true
+        searched.forEach { store.setPrimed(it) }
         store.saveDeals(deals)
         store.lastScan = System.currentTimeMillis()
         ScanResult(deals, fresh, errors)

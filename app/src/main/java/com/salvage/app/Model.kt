@@ -9,14 +9,21 @@ enum class Console(
     val label: String,
     val query: String,
     val defaultMax: Int,
+    val isController: Boolean,
+    /** eBay category: Video Game Consoles, or Controllers & Attachments. */
+    val category: String,
     private val pattern: Regex,
 ) {
-    PS5("ps5", "PS5", "(ps5, playstation 5)", 150,
+    PS5("ps5", "PS5", "(ps5, playstation 5)", 150, false, "139971",
         Regex("""\b(ps\s?5|play\s?station\s?5)\b""", RegexOption.IGNORE_CASE)),
-    SERIES_X("xsx", "Series X", "xbox series x", 130,
+    SERIES_X("xsx", "Series X", "xbox series x", 130, false, "139971",
         Regex("""series\s?x\b""", RegexOption.IGNORE_CASE)),
-    SERIES_S("xss", "Series S", "xbox series s", 70,
-        Regex("""series\s?s\b""", RegexOption.IGNORE_CASE));
+    SERIES_S("xss", "Series S", "xbox series s", 70, false, "139971",
+        Regex("""series\s?s\b""", RegexOption.IGNORE_CASE)),
+    DUALSENSE("ds", "DualSense", "(dualsense, ps5 controller)", 20, true, "117042",
+        Regex("""dual\s?sense|\b(ps\s?5|play\s?station\s?5)\b""", RegexOption.IGNORE_CASE)),
+    XBOX_PAD("xpad", "Xbox pad", "(xbox series controller, xbox wireless controller)", 15, true, "117042",
+        Regex("""\bxbox\b""", RegexOption.IGNORE_CASE));
 
     fun matches(title: String) = pattern.containsMatchIn(title)
 

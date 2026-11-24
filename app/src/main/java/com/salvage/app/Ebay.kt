@@ -18,8 +18,6 @@ class Ebay(private val store: Store) {
         private const val TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token"
         private const val SEARCH_URL = "https://api.ebay.com/buy/browse/v1/item_summary/search"
         private const val SCOPE = "https://api.ebay.com/oauth/api_scope"
-        /** eBay category "Video Game Consoles" – keeps controllers, games and accessories out. */
-        private const val CATEGORY = "139971"
         /** eBay condition "For parts or not working". */
         private const val CONDITION_FAULTY = "7000"
     }
@@ -89,7 +87,7 @@ class Ebay(private val store: Store) {
 
         val url = SEARCH_URL +
             "?q=" + enc(console.query) +
-            "&category_ids=" + CATEGORY +
+            "&category_ids=" + console.category +
             "&filter=" + enc(filter) +
             "&sort=newlyListed" +
             "&limit=100"
@@ -104,10 +102,18 @@ class Ebay(private val store: Store) {
         val items = json.optJSONArray("itemSummaries") ?: return emptyList()
         val out = ArrayList<Deal>()
         for (i in 0 until items.length()) {
-            val deal = Deal.fromEbay(items.getJSONObject(i), console) ?: continue
+            var deal = Deal.fromEbay(items.getJSONObject(i), console) ?: continue
             if (!console.matches(deal.title)) continue
-            if (Faults.isAccessory(deal.title)) continue
-            if (deal.total > maxPrice) continue
+            if (!console.isController && Faults.isControllerListing(deal.title)) {
+                // A controller listed in the console category – show it on the Controllers tab instead.
+                val pad = if (Console.XBOX_PAD.matches(deal.title)) Console.XBOX_PAD else Console.DUALSENSE
+                if (!store.enabled(pad) || deal.total > store.maxPrice(pad)) continue
+                deal = deal.copy(console = pad)
+            } else {
+                if (console.isController && Faults.isConsoleListing(deal.title)) continue
+                if (Faults.isAccessory(deal.title)) continue
+                if (deal.total > maxPrice) continue
+            }
             out.add(deal)
         }
         return out

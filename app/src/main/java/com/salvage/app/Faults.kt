@@ -25,6 +25,16 @@ object Faults {
             rx("""dis[ck] drive|won'?t read|not reading|doesn'?t read|\beject|dis[ck]s? (issue|fault|problem|not)"""),
         Tag("Cosmetic", Level.EASY) to
             rx("""crack|scratch|cosmetic|\bdent|broken (stand|cover|faceplate|plate|feet|foot)"""),
+        Tag("Stick drift", Level.EASY) to
+            rx("""drift|joy ?stick|thumb ?stick|analog(ue)? stick"""),
+        Tag("Buttons / triggers", Level.EASY) to
+            rx("""button|trigger|bumper|\b[lr][12]\b|adaptive|sticky|not clicking"""),
+        Tag("Charging", Level.EASY) to
+            rx("""charg|usb"""),
+        Tag("Connection", Level.MAYBE) to
+            rx("""connect|pair|bluetooth|\bsync"""),
+        Tag("Battery", Level.MAYBE) to
+            rx("""batter(y|ies)|won'?t hold"""),
         Tag("No power", Level.MAYBE) to
             rx("""no power|\bdead\b|won'?t (turn|power|switch|boot)|doesn'?t (turn|power|switch|boot)|not (turning|powering|switching|booting)|won'?t start|no lights?\b"""),
         Tag("Light of death", Level.MAYBE) to
@@ -57,4 +67,17 @@ object Faults {
         if (consoleWords.containsMatchIn(title)) return false
         return startsWithAccessory.containsMatchIn(title) || forConsole.containsMatchIn(title)
     }
+
+    private val padWords = rx("""controller|dual ?sense|joy ?pad|game ?pad|\bpads?\b""")
+    private val comesWithPad = rx("""(with|w/|and|&|\+|plus|inc\.?|incl\.?|includes?|including|x ?2|two|2x?)\s*(\d\s*)?(x\s*)?(official\s+|wireless\s+|white\s+|black\s+)?(controllers?|dual ?sense|pads?)""")
+
+    /** A controller on its own (not a console that comes with one). */
+    fun isControllerListing(title: String): Boolean =
+        padWords.containsMatchIn(title) &&
+            !consoleWords.containsMatchIn(title) &&
+            !comesWithPad.containsMatchIn(title)
+
+    /** A whole console that turned up in a controller search. */
+    fun isConsoleListing(title: String): Boolean =
+        consoleWords.containsMatchIn(title) || !padWords.containsMatchIn(title)
 }
