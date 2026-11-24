@@ -82,5 +82,22 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="7dp"
             android:orientation="horizontal" />
+
+        <TextView
+            android:id="@+id/notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:background="@drawable/notes_bg"
+            android:ellipsize="end"
+            android:lineSpacingExtra="1dp"
+            android:maxLines="3"
+            android:paddingStart="9dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="9dp"
+            android:paddingBottom="6dp"
+            android:textColor="@color/notes"
+            android:textSize="12sp"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

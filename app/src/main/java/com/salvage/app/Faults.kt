@@ -15,6 +15,8 @@ object Faults {
 
     // Order = display order. Easy bench fixes first, then gambles, then red flags.
     private val rules: List<Pair<Tag, Regex>> = listOf(
+        Tag("Powers on", Level.EASY) to
+            rx("""powers on|turns on (fine|ok|okay|normally)|switches on (fine|ok)|boots (up|fine|ok|to)|loads (up|to)|works (fine|perfectly|ok)"""),
         Tag("HDMI", Level.EASY) to
             rx("""hdmi|no display|no picture|no signal|no video|no image|no output"""),
         Tag("Fan / noise", Level.EASY) to
@@ -32,7 +34,7 @@ object Faults {
         Tag("Charging", Level.EASY) to
             rx("""charg|usb"""),
         Tag("Connection", Level.MAYBE) to
-            rx("""connect|pair|bluetooth|\bsync"""),
+            rx("""connect|\bpair|bluetooth|\bsync"""),
         Tag("Battery", Level.MAYBE) to
             rx("""batter(y|ies)|won'?t hold"""),
         Tag("No power", Level.MAYBE) to
@@ -53,7 +55,64 @@ object Faults {
             rx("""(mother)?board only|shell only|case only|housing only|no (ssd|hdd|hard ?drive|motherboard|board|apu|ram|chip|nand)\b|missing (parts|board|motherboard|apu|chips?|ram|ssd|nand)|stripped|(apu|chips?|ram|nand|ssd) (removed|missing)"""),
     )
 
-    fun analyse(title: String) = Analysis(rules.filter { it.second.containsMatchIn(title) }.map { it.first })
+    /** Tags from the title, plus any found in the description ([extra] = tag labels). */
+    fun analyse(title: String, extra: List<String>? = null): Analysis {
+        val fromTitle = rules.filter { it.second.containsMatchIn(title) }.map { it.first }
+        if (extra.isNullOrEmpty()) return Analysis(fromTitle)
+        // Keep the usual order; "Powers on" from the description cancels a guessed "No power".
+        val all = rules.map { it.first }.filter { it in fromTitle || it.label in extra }
+        val powersOn = all.any { it.label == "Powers on" }
+        return Analysis(all.filter { !(powersOn && it.label == "No power" && it !in fromTitle) })
+    }
+
+    // --- Reading the description ---
+
+    /** Words that mark a sentence as being about the fault (not postage, payment, returns...). */
+    private val faultContext = rx("""fault|issue|problem|not work|n'?t work|does ?n'?t|won'?t|wont|can'?t|cannot|broken|error|spares|repair|\bdead\b|no (power|display|picture|signal|video|sound)|stopped|fails?|failed|faulty|damage|drift|sticky|untested|not tested|light|overheat|shuts?|turns? (off|on)|powers? (on|off)|boots?|hdmi|fan|noise|liquid|water|banned|missing|crack|tested|working|as seen|reason for|selling (as|because)""")
+    private val boilerplate = rx("""postage|shipping|dispatch|delivery|courier|payment|paypal|return|refund|feedback|bank holiday|collection only|please message|smoke|pet|cat|dog|vat|invoice|bid only if|serious buyers|timewasters""")
+    private val justSpares = rx("""[\w\s]{0,25}(spares|parts)\s*(or|and|&|/)\s*repairs?[\w\s.!]{0,20}""")
+    private val negated = rx("""(n'?t|not|never|no longer|won'?t|wont|unable to|fails? to|can'?t)\s+(\w+\s+){0,2}(power|turn|switch|boot|load|work)""")
+
+    /**
+     * Pulls the seller's description of the fault out of the condition notes and description.
+     * Only sentences that talk about a fault are used, so postage / returns text can't add tags.
+     */
+    fun readDescription(condition: String?, descriptionHtml: String?): Notes {
+        val sentences = ArrayList<String>()
+        condition?.let { sentences += split(it) }
+        descriptionHtml?.let { sentences += split(htmlToText(it)) }
+
+        val faultSentences = sentences
+            .filter { faultContext.containsMatchIn(it) && !boilerplate.containsMatchIn(it) && !justSpares.matches(it) }
+            .distinct()
+
+        val text = faultSentences.joinToString(". ")
+        val tags = rules.filter { (tag, re) ->
+            if (tag.label == "Powers on") {
+                // "Powers on" only counts in a sentence that isn't negated ("doesn't power on").
+                faultSentences.any { re.containsMatchIn(it) && !negated.containsMatchIn(it) }
+            } else re.containsMatchIn(text)
+        }.map { it.first.label }
+
+        val summary = faultSentences.take(3)
+            .map { if (it.length > 150) it.take(147).trimEnd() + "…" else it }
+            .joinToString(" · ")
+            .ifEmpty { null }
+        return Notes(summary, tags)
+    }
+
+    private fun htmlToText(html: String): String {
+        val cleaned = html
+            .replace(Regex("""(?is)<(style|script)[^>]*>.*?</\1>"""), " ")
+            .replace(Regex("""(?i)<br\s*/?>|</p>|</div>|</li>|</h\d>|<li[^>]*>"""), "\n")
+        return android.text.Html.fromHtml(cleaned, android.text.Html.FROM_HTML_MODE_LEGACY).toString()
+    }
+
+    private fun split(text: String): List<String> =
+        text.take(6000)
+            .split(Regex("""\n+|(?<=[.!?])\s+|\s+[-–•*]\s+|\s{3,}"""))
+            .map { it.replace(Regex("""\s+"""), " ").trim().trim('-', '*', '•', ' ') }
+            .filter { it.length in 8..400 }
 
     // --- Accessory filter (eBay's console category does most of the work; this catches strays) ---
 

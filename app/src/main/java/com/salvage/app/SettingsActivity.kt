@@ -23,7 +23,9 @@ class SettingsActivity : ComponentActivity() {
     private lateinit var notifyRisky: Switch
     private lateinit var unhide: TextView
 
-    private class ConsoleRow(val console: Console, val toggle: Switch, val max: EditText)
+    private class ConsoleRow(val console: Console, val toggle: Switch, val max: EditText, val alert: EditText)
+    private lateinit var easyBoost: Switch
+    private lateinit var auctionAlerts: Switch
     private lateinit var rows: List<ConsoleRow>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,14 +38,16 @@ class SettingsActivity : ComponentActivity() {
         testStatus = findViewById(R.id.test_status)
         interval = findViewById(R.id.interval)
         notifyRisky = findViewById(R.id.notify_risky)
+        easyBoost = findViewById(R.id.easy_boost)
+        auctionAlerts = findViewById(R.id.auction_alerts)
         unhide = findViewById(R.id.unhide)
 
         rows = listOf(
-            ConsoleRow(Console.PS5, findViewById(R.id.on_ps5), findViewById(R.id.max_ps5)),
-            ConsoleRow(Console.SERIES_X, findViewById(R.id.on_xsx), findViewById(R.id.max_xsx)),
-            ConsoleRow(Console.SERIES_S, findViewById(R.id.on_xss), findViewById(R.id.max_xss)),
-            ConsoleRow(Console.DUALSENSE, findViewById(R.id.on_ds), findViewById(R.id.max_ds)),
-            ConsoleRow(Console.XBOX_PAD, findViewById(R.id.on_xpad), findViewById(R.id.max_xpad)),
+            ConsoleRow(Console.PS5, findViewById(R.id.on_ps5), findViewById(R.id.max_ps5), findViewById(R.id.alert_ps5)),
+            ConsoleRow(Console.SERIES_X, findViewById(R.id.on_xsx), findViewById(R.id.max_xsx), findViewById(R.id.alert_xsx)),
+            ConsoleRow(Console.SERIES_S, findViewById(R.id.on_xss), findViewById(R.id.max_xss), findViewById(R.id.alert_xss)),
+            ConsoleRow(Console.DUALSENSE, findViewById(R.id.on_ds), findViewById(R.id.max_ds), findViewById(R.id.alert_ds)),
+            ConsoleRow(Console.XBOX_PAD, findViewById(R.id.on_xpad), findViewById(R.id.max_xpad), findViewById(R.id.alert_xpad)),
         )
 
         clientId.setText(store.clientId)
@@ -51,16 +55,20 @@ class SettingsActivity : ComponentActivity() {
         for (r in rows) {
             r.toggle.isChecked = store.enabled(r.console)
             r.max.setText(store.maxPrice(r.console).toString())
+            r.alert.setText(store.alertPrice(r.console).toString())
         }
         interval.check(
             when (store.interval) {
                 0 -> R.id.int_off
+                Scheduler.FAST_MINUTES -> R.id.int_5
                 15 -> R.id.int_15
                 60 -> R.id.int_60
                 else -> R.id.int_30
             }
         )
         notifyRisky.isChecked = store.notifyRisky
+        easyBoost.isChecked = store.easyFixBoost
+        auctionAlerts.isChecked = store.auctionAlerts
         updateUnhide()
 
         findViewById<TextView>(R.id.back).setOnClickListener { finish() }
@@ -121,14 +129,19 @@ class SettingsActivity : ComponentActivity() {
             if (max != store.maxPrice(r.console) || r.toggle.isChecked != store.enabled(r.console)) pricesChanged = true
             store.setEnabled(r.console, r.toggle.isChecked)
             store.setMaxPrice(r.console, max)
+            val alert = r.alert.text.toString().trim().toIntOrNull()?.coerceIn(1, max) ?: minOf(r.console.defaultAlert, max)
+            store.setAlertPrice(r.console, alert)
         }
         store.interval = when (interval.checkedRadioButtonId) {
             R.id.int_off -> 0
+            R.id.int_5 -> Scheduler.FAST_MINUTES
             R.id.int_15 -> 15
             R.id.int_60 -> 60
             else -> 30
         }
         store.notifyRisky = notifyRisky.isChecked
+        store.easyFixBoost = easyBoost.isChecked
+        store.auctionAlerts = auctionAlerts.isChecked
         if (pricesChanged) store.lastScan = 0 // refresh results when back on the main screen
         Scheduler.apply(this)
     }

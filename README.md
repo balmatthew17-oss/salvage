@@ -7,7 +7,9 @@ Android app that watches eBay UK for faulty PS5, Xbox Series X and Xbox Series S
 - Reads the title and tags the likely fault: easy bench fixes (HDMI, fan, software, disc drive), gambles (no power, light of death, overheating, liquid) and red flags (banned, parts missing)
 - Separate tabs for Buy it now, Auctions and Controllers (faulty DualSense and Xbox controllers – drift, buttons, charging)
 - Sort by newest, cheapest or auctions ending soon; tap a listing to open it in the eBay app
-- Checks in the background every 15/30/60 minutes and notifies you about new listings
+- Reads each new listing's condition notes and description and shows what the seller says is wrong ("Seller says: …"), adding fault tags it finds there
+- Alert price per item: only Buy it now listings under it send a notification (plus easy-fix faults up to 20% over); prices that would alert show in green
+- Checks in the background every 5/15/30/60 minutes and notifies you about new listings
 - Long-press a listing to hide it
 
 ## Setup

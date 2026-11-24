@@ -100,224 +100,277 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
-        <TextView style="@style/Section" android:text="WHAT TO LOOK FOR" />
+        <TextView style="@style/Section" android:text="CONSOLES" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:text="Max price includes postage."
+            android:lineSpacingExtra="2dp"
+            android:text="Prices include postage. Everything up to the first price shows in the app. Buy it now listings under the alert price send a notification."
             android:textColor="@color/muted"
             android:textSize="13sp" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/card"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <Switch
+                android:id="@+id/on_ps5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="PS5"
+                android:textColor="@color/text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/card"
+                android:layout_marginTop="10dp"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="12dp">
-
-                <Switch
-                    android:id="@+id/on_ps5"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="PS5"
-                    android:textColor="@color/text"
-                    android:textSize="15sp" />
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:text="max £"
+                    android:text="Show up to £"
                     android:textColor="@color/muted"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
 
                 <EditText
                     android:id="@+id/max_ps5"
-                    android:layout_width="72dp"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/field"
-                    android:hint="150"
-                    android:inputType="number"
-                    android:maxLength="4"
-                    android:padding="10dp"
-                    android:singleLine="true"
-                    android:textColor="@color/text"
-                    android:textColorHint="@color/muted"
-                    android:textSize="15sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/card"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="12dp">
-
-                <Switch
-                    android:id="@+id/on_xsx"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Xbox Series X"
-                    android:textColor="@color/text"
-                    android:textSize="15sp" />
+                    style="@style/Price"
+                    android:hint="150" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
-                    android:text="max £"
+                    android:text="Alert under £"
+                    android:textColor="@color/accent"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/alert_ps5"
+                    style="@style/Price"
+                    android:hint="100" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/card"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <Switch
+                android:id="@+id/on_xsx"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Xbox Series X"
+                android:textColor="@color/text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Show up to £"
                     android:textColor="@color/muted"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
 
                 <EditText
                     android:id="@+id/max_xsx"
-                    android:layout_width="72dp"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/field"
-                    android:hint="130"
-                    android:inputType="number"
-                    android:maxLength="4"
-                    android:padding="10dp"
-                    android:singleLine="true"
-                    android:textColor="@color/text"
-                    android:textColorHint="@color/muted"
-                    android:textSize="15sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/card"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="12dp">
-
-                <Switch
-                    android:id="@+id/on_xss"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Xbox Series S"
-                    android:textColor="@color/text"
-                    android:textSize="15sp" />
+                    style="@style/Price"
+                    android:hint="130" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
-                    android:text="max £"
+                    android:text="Alert under £"
+                    android:textColor="@color/accent"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/alert_xsx"
+                    style="@style/Price"
+                    android:hint="90" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/card"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <Switch
+                android:id="@+id/on_xss"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Xbox Series S"
+                android:textColor="@color/text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Show up to £"
                     android:textColor="@color/muted"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
 
                 <EditText
                     android:id="@+id/max_xss"
-                    android:layout_width="72dp"
+                    style="@style/Price"
+                    android:hint="70" />
+
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/field"
-                    android:hint="70"
-                    android:inputType="number"
-                    android:maxLength="4"
-                    android:padding="10dp"
-                    android:singleLine="true"
-                    android:textColor="@color/text"
-                    android:textColorHint="@color/muted"
-                    android:textSize="15sp" />
+                    android:layout_marginStart="14dp"
+                    android:text="Alert under £"
+                    android:textColor="@color/accent"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/alert_xss"
+                    style="@style/Price"
+                    android:hint="45" />
             </LinearLayout>
+        </LinearLayout>
 
         <TextView style="@style/Section" android:text="CONTROLLERS" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/card"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <Switch
+                android:id="@+id/on_ds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="PS5 DualSense"
+                android:textColor="@color/text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/card"
+                android:layout_marginTop="10dp"
                 android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="12dp">
-
-                <Switch
-                    android:id="@+id/on_ds"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="PS5 DualSense"
-                    android:textColor="@color/text"
-                    android:textSize="15sp" />
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:text="max £"
+                    android:text="Show up to £"
                     android:textColor="@color/muted"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
 
                 <EditText
                     android:id="@+id/max_ds"
-                    android:layout_width="72dp"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/field"
-                    android:hint="20"
-                    android:inputType="number"
-                    android:maxLength="4"
-                    android:padding="10dp"
-                    android:singleLine="true"
-                    android:textColor="@color/text"
-                    android:textColorHint="@color/muted"
-                    android:textSize="15sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/card"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="12dp">
-
-                <Switch
-                    android:id="@+id/on_xpad"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Xbox controller"
-                    android:textColor="@color/text"
-                    android:textSize="15sp" />
+                    style="@style/Price"
+                    android:hint="20" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
-                    android:text="max £"
+                    android:text="Alert under £"
+                    android:textColor="@color/accent"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/alert_ds"
+                    style="@style/Price"
+                    android:hint="12" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/card"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <Switch
+                android:id="@+id/on_xpad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Xbox controller"
+                android:textColor="@color/text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Show up to £"
                     android:textColor="@color/muted"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
 
                 <EditText
                     android:id="@+id/max_xpad"
-                    android:layout_width="72dp"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/field"
-                    android:hint="15"
-                    android:inputType="number"
-                    android:maxLength="4"
-                    android:padding="10dp"
-                    android:singleLine="true"
-                    android:textColor="@color/text"
-                    android:textColorHint="@color/muted"
-                    android:textSize="15sp" />
-            </LinearLayout>
+                    style="@style/Price"
+                    android:hint="15" />
 
-        <TextView style="@style/Section" android:text="CHECK FOR NEW LISTINGS" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="Alert under £"
+                    android:textColor="@color/accent"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/alert_xpad"
+                    style="@style/Price"
+                    android:hint="10" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView style="@style/Section" android:text="NOTIFICATIONS" />
+
+        <TextView style="@style/Label" android:text="Check eBay every" />
 
         <RadioGroup
             android:id="@+id/interval"
@@ -327,17 +380,49 @@
             android:orientation="horizontal"
             android:padding="8dp">
 
+            <RadioButton android:id="@+id/int_5" style="@style/Radio" android:text="5 min" />
             <RadioButton android:id="@+id/int_15" style="@style/Radio" android:text="15 min" />
             <RadioButton android:id="@+id/int_30" style="@style/Radio" android:text="30 min" />
-            <RadioButton android:id="@+id/int_60" style="@style/Radio" android:text="1 hour" />
+            <RadioButton android:id="@+id/int_60" style="@style/Radio" android:text="1 hr" />
             <RadioButton android:id="@+id/int_off" style="@style/Radio" android:text="Off" />
         </RadioGroup>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:lineSpacingExtra="2dp"
+            android:text="5 min catches cheap Buy it now listings before they sell, but uses more battery. Android may delay checks while the phone is asleep."
+            android:textColor="@color/muted"
+            android:textSize="13sp" />
+
+        <Switch
+            android:id="@+id/easy_boost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/card"
+            android:padding="14dp"
+            android:text="Easy-fix alerts: notify for green faults (HDMI, fan, drift…) up to 20% over the alert price"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
+
+        <Switch
+            android:id="@+id/auction_alerts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/card"
+            android:padding="14dp"
+            android:text="Notify for every new auction under the show price"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
 
         <Switch
             android:id="@+id/notify_risky"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/card"
             android:padding="14dp"
             android:text="Also notify for risky listings (banned, parts missing)"

@@ -19,6 +19,7 @@ class DealAdapter(
 ) : RecyclerView.Adapter<DealAdapter.Holder>() {
 
     private var items: List<Deal> = emptyList()
+    private val store = Store(context)
 
     fun submit(list: List<Deal>) {
         items = list
@@ -65,6 +66,18 @@ class DealAdapter(
         if (tags.size > 4) h.tags.addView(pill("+${tags.size - 4}", null))
         if (tags.isEmpty()) h.tags.addView(pill("Fault not stated", null))
 
+        val summary = d.notes?.summary
+        if (summary != null) {
+            h.notes.text = "Seller says: “$summary”"
+            h.notes.visibility = View.VISIBLE
+        } else {
+            h.notes.visibility = View.GONE
+        }
+
+        // Highlight Buy it now listings that would trigger an alert.
+        val hot = !d.auction && Alerts.worthIt(store, d)
+        h.price.setTextColor(context.getColor(if (hot) R.color.accent else R.color.text))
+
         ImageLoader.load(d.image, h.image)
 
         h.itemView.setOnClickListener { onOpen(d) }
@@ -104,5 +117,6 @@ class DealAdapter(
         val kind: TextView = v.findViewById(R.id.kind)
         val meta: TextView = v.findViewById(R.id.meta)
         val tags: LinearLayout = v.findViewById(R.id.tags)
+        val notes: TextView = v.findViewById(R.id.notes)
     }
 }

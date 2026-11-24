@@ -33,6 +33,19 @@ class Store(context: Context) {
     fun maxPrice(c: Console) = p.getInt("max_${c.key}", c.defaultMax)
     fun setMaxPrice(c: Console, v: Int) = p.edit().putInt("max_${c.key}", v).apply()
 
+    fun alertPrice(c: Console) = p.getInt("alert_${c.key}", c.defaultAlert)
+    fun setAlertPrice(c: Console, v: Int) = p.edit().putInt("alert_${c.key}", v).apply()
+
+    /** Also alert for easy-fix Buy it now listings up to 20% over the alert price. */
+    var easyFixBoost: Boolean
+        get() = p.getBoolean("easy_boost", true)
+        set(v) = p.edit().putBoolean("easy_boost", v).apply()
+
+    /** Notify for every new auction under the max price. */
+    var auctionAlerts: Boolean
+        get() = p.getBoolean("auction_alerts", true)
+        set(v) = p.edit().putBoolean("auction_alerts", v).apply()
+
     /** Background check interval in minutes; 0 = off. */
     var interval: Int
         get() = p.getInt("interval", 30)
@@ -77,6 +90,26 @@ class Store(context: Context) {
         val s = ids("hidden"); s.add(id); saveIds("hidden", s, 3000)
     }
     fun unhideAll() = p.edit().remove("hidden").apply()
+
+    // --- description notes, cached so each listing is only read once ---
+
+    fun notes(): MutableMap<String, Notes> {
+        val out = LinkedHashMap<String, Notes>()
+        try {
+            val o = org.json.JSONObject(p.getString("notes", "{}") ?: "{}")
+            o.keys().forEach { k -> o.optJSONObject(k)?.let { out[k] = Notes.fromJson(it) } }
+        } catch (e: Exception) { }
+        return out
+    }
+
+    fun saveNotes(map: Map<String, Notes>, keep: Set<String>) {
+        val o = org.json.JSONObject()
+        // Only keep notes for listings still being shown, plus the most recent others.
+        val entries = map.entries.toList()
+        val recent = entries.takeLast(600).map { it.key }.toSet()
+        entries.filter { it.key in keep || it.key in recent }.forEach { o.put(it.key, it.value.toJson()) }
+        p.edit().putString("notes", o.toString()).apply()
+    }
 
     // --- last results ---
 

@@ -17,6 +17,7 @@ class Ebay(private val store: Store) {
     companion object {
         private const val TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token"
         private const val SEARCH_URL = "https://api.ebay.com/buy/browse/v1/item_summary/search"
+        private const val ITEM_URL = "https://api.ebay.com/buy/browse/v1/item/"
         private const val SCOPE = "https://api.ebay.com/oauth/api_scope"
         /** eBay condition "For parts or not working". */
         private const val CONDITION_FAULTY = "7000"
@@ -117,6 +118,17 @@ class Ebay(private val store: Store) {
             out.add(deal)
         }
         return out
+    }
+
+    /** Reads one listing's condition notes and description and works out what the seller says is wrong. */
+    fun readNotes(itemId: String): Notes {
+        val url = ITEM_URL + enc(itemId)
+        val json = get(url) ?: run { store.clearToken(); get(url) }
+            ?: throw EbayException("eBay refused the request")
+        return Faults.readDescription(
+            json.optString("conditionDescription").ifEmpty { null },
+            json.optString("description").ifEmpty { json.optString("shortDescription").ifEmpty { null } },
+        )
     }
 
     /** Returns null on 401 so the caller can refresh the token. */
