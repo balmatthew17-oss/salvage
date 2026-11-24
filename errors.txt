@@ -1,0 +1,21 @@
+> Task :app:processReleaseResources FAILED
+> Task :app:extractReleaseVersionControlInfo
+> Task :app:mergeExtDexRelease
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run-1795541605129.json
+--
+* What went wrong:
+Execution failed for task ':app:processReleaseResources'.
+> A failure occurred while executing com.android.build.gradle.internal.res.LinkApplicationAndroidResourcesTask$TaskAction
+   > Android resource linking failed
+     ERROR: /home/runner/work/salvage/salvage/app/src/main/res/layout/item_deal.xml:101: AAPT: error: resource drawable/notes_bg (aka com.salvage.app:drawable/notes_bg) not found.
+         
+
+* Try:
+--
+ERROR: /home/runner/work/salvage/salvage/app/src/main/res/layout/item_deal.xml:101: AAPT: error: resource drawable/notes_bg (aka com.salvage.app:drawable/notes_bg) not found.
+    
+	at com.android.builder.internal.aapt.v2.Aapt2Exception$Companion.create(Aapt2Exception.kt:45)
+	at com.android.builder.internal.aapt.v2.Aapt2Exception$Companion.create$default(Aapt2Exception.kt:31)
+--
+BUILD FAILED in 17s
+25 actionable tasks: 25 executed
