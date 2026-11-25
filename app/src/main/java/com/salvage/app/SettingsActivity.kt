@@ -4,6 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.graphics.Typeface
+import android.os.Build
+import android.provider.Settings
+import android.view.View
 import android.text.InputFilter
 import android.text.InputType
 import android.util.TypedValue
@@ -32,6 +35,9 @@ class SettingsActivity : ComponentActivity() {
     private class ConsoleRow(val console: Console, val toggle: Switch, val max: EditText, val alert: EditText)
     private lateinit var easyBoost: Switch
     private lateinit var auctionAlerts: Switch
+    private lateinit var lead: RadioGroup
+    private lateinit var autoReminders: Switch
+    private val leadIds = mapOf(2 to R.id.lead_2, 5 to R.id.lead_5, 10 to R.id.lead_10, 30 to R.id.lead_30, 60 to R.id.lead_60)
     private lateinit var rows: List<ConsoleRow>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +52,8 @@ class SettingsActivity : ComponentActivity() {
         notifyRisky = findViewById(R.id.notify_risky)
         easyBoost = findViewById(R.id.easy_boost)
         auctionAlerts = findViewById(R.id.auction_alerts)
+        lead = findViewById(R.id.lead)
+        autoReminders = findViewById(R.id.auto_reminders)
         unhide = findViewById(R.id.unhide)
 
         rows = buildTypeRows(findViewById(R.id.types))
@@ -69,6 +77,15 @@ class SettingsActivity : ComponentActivity() {
         notifyRisky.isChecked = store.notifyRisky
         easyBoost.isChecked = store.easyFixBoost
         auctionAlerts.isChecked = store.auctionAlerts
+        lead.check(leadIds[store.reminderLead] ?: R.id.lead_10)
+        autoReminders.isChecked = store.autoReminders
+        findViewById<TextView>(R.id.exact_allow).setOnClickListener {
+            if (Build.VERSION.SDK_INT >= 31) {
+                try {
+                    startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName")))
+                } catch (e: Exception) { }
+            }
+        }
         updateUnhide()
 
         findViewById<TextView>(R.id.back).setOnClickListener { finish() }
@@ -156,7 +173,8 @@ class SettingsActivity : ComponentActivity() {
     }
 
     private fun settingsName(c: Console) = when (c) {
-        Console.PS5 -> "PS5"
+        Console.PS5 -> "PS5 (standard / slim)"
+        Console.PS5_PRO -> "PS5 Pro"
         Console.SERIES_X -> "Xbox Series X"
         Console.SERIES_S -> "Xbox Series S"
         Console.DUALSENSE -> "PS5 DualSense"
@@ -166,6 +184,13 @@ class SettingsActivity : ComponentActivity() {
         Console.RTX40 -> "RTX 4060 – 4090"
         Console.RTX50 -> "RTX 5060 – 5090"
         Console.RTX_LAPTOP -> "Laptops with an RTX GPU"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        findViewById<View>(R.id.exact_row).visibility =
+            if (Reminders.canBeExact(this)) View.GONE else View.VISIBLE
+        Reminders.rescheduleAll(this) // switch to exact timing if just allowed
     }
 
     private fun updateUnhide() {
@@ -225,6 +250,11 @@ class SettingsActivity : ComponentActivity() {
         store.notifyRisky = notifyRisky.isChecked
         store.easyFixBoost = easyBoost.isChecked
         store.auctionAlerts = auctionAlerts.isChecked
+        val newLead = leadIds.entries.firstOrNull { it.value == lead.checkedRadioButtonId }?.key ?: 10
+        val leadChanged = newLead != store.reminderLead
+        store.reminderLead = newLead
+        store.autoReminders = autoReminders.isChecked
+        if (leadChanged) Reminders.rescheduleAll(this)
         if (pricesChanged) store.lastScan = 0 // refresh results when back on the main screen
         Scheduler.apply(this)
     }

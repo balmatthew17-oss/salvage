@@ -5,6 +5,11 @@ import org.json.JSONArray
 
 class Store(context: Context) {
 
+    companion object {
+        /** Searches from the very first version; newer ones start un-primed so they don't flood notifications. */
+        private val FIRST_TYPES = setOf("ps5", "xsx", "xss")
+    }
+
     private val p = context.applicationContext.getSharedPreferences("salvage", Context.MODE_PRIVATE)
 
     var clientId: String
@@ -61,7 +66,7 @@ class Store(context: Context) {
 
     /** False until the first scan, so you aren't flooded with notifications for everything already listed. */
     fun primed(c: Console): Boolean =
-        p.getBoolean("primed_${c.key}", c.kind == Kind.CONSOLE && p.getBoolean("primed", false))
+        p.getBoolean("primed_${c.key}", c.key in FIRST_TYPES && p.getBoolean("primed", false))
     fun setPrimed(c: Console) = p.edit().putBoolean("primed_${c.key}", true).apply()
 
     // --- id lists ---
@@ -109,6 +114,49 @@ class Store(context: Context) {
         val recent = entries.takeLast(600).map { it.key }.toSet()
         entries.filter { it.key in keep || it.key in recent }.forEach { o.put(it.key, it.value.toJson()) }
         p.edit().putString("notes", o.toString()).apply()
+    }
+
+    // --- auction reminders ---
+
+    /** Minutes before the end of an auction to remind you. */
+    var reminderLead: Int
+        get() = p.getInt("reminder_lead", 10)
+        set(v) = p.edit().putInt("reminder_lead", v).apply()
+
+    /** Automatically remind about auctions still under the alert price. */
+    var autoReminders: Boolean
+        get() = p.getBoolean("auto_reminders", true)
+        set(v) = p.edit().putBoolean("auto_reminders", v).apply()
+
+    fun reminders(): Map<String, Reminder> {
+        val out = LinkedHashMap<String, Reminder>()
+        try {
+            val o = org.json.JSONObject(p.getString("reminders", "{}") ?: "{}")
+            o.keys().forEach { k ->
+                val r = o.optJSONObject(k) ?: return@forEach
+                val deal = r.optJSONObject("deal")?.let { Deal.fromJson(it) } ?: return@forEach
+                out[k] = Reminder(deal, r.optBoolean("auto"))
+            }
+        } catch (e: Exception) { }
+        return out
+    }
+
+    private fun saveReminders(map: Map<String, Reminder>) {
+        val o = org.json.JSONObject()
+        map.forEach { (k, r) -> o.put(k, org.json.JSONObject().put("deal", r.deal.toJson()).put("auto", r.auto)) }
+        p.edit().putString("reminders", o.toString()).commit()
+    }
+
+    fun saveReminder(r: Reminder) = saveReminders(reminders().toMutableMap().apply { put(r.deal.id, r) })
+    fun removeReminder(id: String) = saveReminders(reminders().toMutableMap().apply { remove(id) })
+
+    /** Auctions you switched the bell off for, so automatic reminders don't add them back. */
+    val noRemind: Set<String> get() = ids("no_remind")
+    fun addNoRemind(id: String) {
+        val s = ids("no_remind"); s.add(id); saveIds("no_remind", s, 500)
+    }
+    fun removeNoRemind(id: String) {
+        val s = ids("no_remind"); s.remove(id); saveIds("no_remind", s, 500)
     }
 
     // --- last results ---

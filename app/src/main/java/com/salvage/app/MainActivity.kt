@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
         setContentView(R.layout.activity_main)
         store = Store(this)
         Notifier.createChannel(this)
+        Reminders.createChannel(this)
 
         subtitle = findViewById(R.id.subtitle)
         sectionRow = findViewById(R.id.sections)
@@ -70,7 +71,7 @@ class MainActivity : ComponentActivity() {
         emptyAction = findViewById(R.id.empty_action)
         refresh = findViewById(R.id.refresh)
 
-        adapter = DealAdapter(this, ::open, ::hide)
+        adapter = DealAdapter(this, ::open, ::hide, ::bell)
         findViewById<RecyclerView>(R.id.list).apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = this@MainActivity.adapter
@@ -129,6 +130,13 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) {
             Toast.makeText(this, "Couldn't open the listing", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun bell(d: Deal) {
+        val on = Reminders.toggle(this, d)
+        val msg = if (on) "I'll remind you ${store.reminderLead} min before it ends" else "Reminder off"
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        render()
     }
 
     private fun hide(d: Deal) {

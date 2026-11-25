@@ -100,4 +100,15 @@
             android:textSize="12sp"
             android:visibility="gone" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/bell"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="4dp"
+        android:background="@drawable/round_dark"
+        android:contentDescription="Remind me before it ends"
+        android:padding="8dp"
+        android:src="@drawable/ic_bell_outline"
+        android:visibility="gone" />
 </LinearLayout>

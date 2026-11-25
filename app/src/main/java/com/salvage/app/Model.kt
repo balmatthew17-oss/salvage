@@ -22,9 +22,14 @@ enum class Console(
     /** eBay category to search in. */
     val category: String,
     private val pattern: Regex,
+    /** Titles matching this belong to a different search (e.g. PS5 Pro, not PS5). */
+    private val exclude: Regex? = null,
 ) {
     PS5("ps5", "PS5", "(ps5, playstation 5)", 150, 100, Kind.CONSOLE, "139971",
-        rx("""\b(ps\s?5|play\s?station\s?5)\b""")),
+        rx("""\b(ps\s?5|play\s?station\s?5)\b"""),
+        exclude = rx("""\b(ps\s?5|play\s?station\s?5)\s*pro\b""")),
+    PS5_PRO("ps5pro", "PS5 Pro", "(ps5 pro, playstation 5 pro)", 350, 230, Kind.CONSOLE, "139971",
+        rx("""\b(ps\s?5|play\s?station\s?5)\s*pro\b""")),
     SERIES_X("xsx", "Series X", "xbox series x", 130, 90, Kind.CONSOLE, "139971",
         rx("""series\s?x\b""")),
     SERIES_S("xss", "Series S", "xbox series s", 70, 45, Kind.CONSOLE, "139971",
@@ -46,7 +51,8 @@ enum class Console(
 
     val isController: Boolean get() = kind == Kind.CONTROLLER
 
-    fun matches(title: String) = pattern.containsMatchIn(title)
+    fun matches(title: String) =
+        pattern.containsMatchIn(title) && exclude?.containsMatchIn(title) != true
 
     companion object {
         fun byKey(key: String) = entries.firstOrNull { it.key == key }

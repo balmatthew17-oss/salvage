@@ -33,6 +33,7 @@ class ScanResult(val deals: List<Deal>, val fresh: List<Deal>, val errors: List<
 
 /** Runs every enabled search, saves the results and works out which listings are new. */
 class Scanner(context: Context) {
+    private val appContext = context.applicationContext
     private val store = Store(context)
 
     suspend fun scan(): ScanResult = withContext(Dispatchers.IO) {
@@ -65,6 +66,7 @@ class Scanner(context: Context) {
         searched.forEach { store.setPrimed(it) }
         store.saveDeals(deals)
         store.lastScan = System.currentTimeMillis()
+        Reminders.autoAdd(appContext, deals)
         ScanResult(deals, fresh, errors)
     }
 

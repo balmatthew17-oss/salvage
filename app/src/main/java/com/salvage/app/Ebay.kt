@@ -143,6 +143,19 @@ class Ebay(private val store: Store) {
         )
     }
 
+    /** Current bid, number of bids and end time of one auction. */
+    fun auctionStatus(itemId: String): AuctionStatus {
+        val url = ITEM_URL + enc(itemId)
+        val json = get(url) ?: run { store.clearToken(); get(url) }
+            ?: throw EbayException("eBay refused the request")
+        val price = (json.optJSONObject("currentBidPrice") ?: json.optJSONObject("price"))
+            ?.optString("value")?.toDoubleOrNull() ?: throw EbayException("No price")
+        val end = json.optString("itemEndDate").ifEmpty { null }?.let {
+            try { java.time.Instant.parse(it).toEpochMilli() } catch (e: Exception) { null }
+        }
+        return AuctionStatus(price, json.optInt("bidCount", 0), end)
+    }
+
     /** Returns null on 401 so the caller can refresh the token. */
     private fun get(url: String): JSONObject? {
         val conn = (URL(url).openConnection() as HttpURLConnection).apply {

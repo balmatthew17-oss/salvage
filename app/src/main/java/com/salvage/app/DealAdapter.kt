@@ -16,6 +16,7 @@ class DealAdapter(
     private val context: Context,
     private val onOpen: (Deal) -> Unit,
     private val onHide: (Deal) -> Unit,
+    private val onBell: (Deal) -> Unit,
 ) : RecyclerView.Adapter<DealAdapter.Holder>() {
 
     private var items: List<Deal> = emptyList()
@@ -78,6 +79,16 @@ class DealAdapter(
         val hot = !d.auction && Alerts.worthIt(store, d)
         h.price.setTextColor(context.getColor(if (hot) R.color.accent else R.color.text))
 
+        if (d.auction && d.endTime != null && d.endTime > now) {
+            val on = Reminders.isOn(store, d.id)
+            h.bell.visibility = View.VISIBLE
+            h.bell.setImageResource(if (on) R.drawable.ic_bell else R.drawable.ic_bell_outline)
+            h.bell.setColorFilter(context.getColor(if (on) R.color.accent else R.color.muted))
+            h.bell.setOnClickListener { onBell(d) }
+        } else {
+            h.bell.visibility = View.GONE
+        }
+
         ImageLoader.load(d.image, h.image)
 
         h.itemView.setOnClickListener { onOpen(d) }
@@ -118,5 +129,6 @@ class DealAdapter(
         val meta: TextView = v.findViewById(R.id.meta)
         val tags: LinearLayout = v.findViewById(R.id.tags)
         val notes: TextView = v.findViewById(R.id.notes)
+        val bell: ImageView = v.findViewById(R.id.bell)
     }
 }

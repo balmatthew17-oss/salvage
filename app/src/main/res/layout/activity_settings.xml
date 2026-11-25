@@ -178,6 +178,71 @@
             android:textColor="@color/text"
             android:textSize="14sp" />
 
+        <TextView style="@style/Section" android:text="AUCTION REMINDERS" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:lineSpacingExtra="2dp"
+            android:text="Tap the bell on any auction to get a reminder before it ends. It shows the live bid at that moment."
+            android:textColor="@color/muted"
+            android:textSize="13sp" />
+
+        <TextView style="@style/Label" android:text="Remind me before the end" />
+
+        <RadioGroup
+            android:id="@+id/lead"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/card"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <RadioButton android:id="@+id/lead_2" style="@style/Radio" android:text="2 min" />
+            <RadioButton android:id="@+id/lead_5" style="@style/Radio" android:text="5 min" />
+            <RadioButton android:id="@+id/lead_10" style="@style/Radio" android:text="10 min" />
+            <RadioButton android:id="@+id/lead_30" style="@style/Radio" android:text="30 min" />
+            <RadioButton android:id="@+id/lead_60" style="@style/Radio" android:text="1 hr" />
+        </RadioGroup>
+
+        <Switch
+            android:id="@+id/auto_reminders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/card"
+            android:padding="14dp"
+            android:text="Also remind me automatically about auctions still under the alert price"
+            android:textColor="@color/text"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:id="@+id/exact_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="14dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:lineSpacingExtra="2dp"
+                android:text="Allow on-time reminders. Without this, Android may send them a few minutes late."
+                android:textColor="@color/maybe"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/exact_allow"
+                style="@style/Button"
+                android:layout_marginStart="10dp"
+                android:text="Allow" />
+        </LinearLayout>
+
         <TextView
             android:id="@+id/unhide"
             style="@style/Button"
