@@ -105,6 +105,7 @@ class Ebay(private val store: Store) {
         for (i in 0 until items.length()) {
             var deal = Deal.fromEbay(items.getJSONObject(i), console) ?: continue
             if (!console.matches(deal.title)) continue
+            if (Faults.isRepairService(deal.title)) continue
             when (console.kind) {
                 Kind.CONSOLE -> if (Faults.isControllerListing(deal.title)) {
                     // A controller listed in the console category – show it with the controllers instead.

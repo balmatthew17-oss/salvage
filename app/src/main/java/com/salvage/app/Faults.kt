@@ -164,6 +164,11 @@ object Faults {
     private val padWords = rx("""controller|dual ?sense|joy ?pad|game ?pad|\bpads?\b""")
     private val comesWithPad = rx("""(with|w/|and|&|\+|plus|inc\.?|incl\.?|includes?|including|x ?2|two|2x?)\s*(\d\s*)?(x\s*)?(official\s+|wireless\s+|white\s+|black\s+)?(controllers?|dual ?sense|pads?)""")
 
+    /** "PS5 HDMI port repair service", "send us your GPU" etc. – not something you can buy. */
+    private val repairService = rx("""\bservices?\b|\bservicing\b|mail[- ]?in|post[- ]?in|send (it |yours |your \w+ )?(in|to us)|we (will |can )?(repair|fix|replace|diagnose)|(repair|fix|replace|reflow|reball|recap)(ing)? your|(repair|replacement|fitting|reflow|reball|reballing|diagnostic|labour|labor)\s+(only|charge|fee)\b|turnaround|same[- ]day (repair|fix)|\d+[- ]?(month|day|year)s? (repair )?warranty on (the )?(repair|work)|professional (repair|fix)|uk (based )?repair (centre|center|shop)""")
+
+    fun isRepairService(title: String) = repairService.containsMatchIn(title)
+
     private val pcJunk = rx("""empty box|box only|(screen|lcd|keyboard|battery|charger|adapter|backplate|shroud|bracket|cooler|heatsink|fans?|case|shell|lid|palm ?rest|hinges?|cable) only|charger for|adapter for|replacement (fan|screen|keyboard|battery|cooler)|water ?block|riser|fan for|cooler for|bracket for|\bfor (asus|msi|gigabyte|zotac|palit|evga|nvidia|dell|hp|lenovo|acer|razer)\b.*\b(fan|cooler|screen|keyboard|battery|charger|heatsink)""")
 
     /** Spare parts / accessories that turn up in GPU and laptop searches. */
